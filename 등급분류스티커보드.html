@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>게임 등급분류 활동지</title>
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; background: #f0f2f5; font-family: sans-serif; overflow: hidden; touch-action: none; }
+        /* 배경판: 선생님이 올린 활동지 이미지 */
+        #board {
+            width: 1000px; height: 700px;
+            background: url('활동지_이미지_주소') no-repeat center/contain;
+            background-color: white;
+            position: relative; margin: 20px auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 10px;
+        }
+        /* 스티커 저장소 */
+        #inventory {
+            width: 1000px; height: 120px;
+            background: #fff; margin: 10px auto;
+            display: flex; align-items: center; justify-content: center;
+            gap: 15px; border-radius: 10px; padding: 10px;
+        }
+        .sticker {
+            width: 80px; height: 80px;
+            touch-action: none; user-select: none;
+            cursor: grab; object-fit: contain;
+        }
+        /* 이동 중일 때 스타일 */
+        .dragging { opacity: 0.8; cursor: grabbing; z-index: 1000; }
+    </style>
+</head>
+<body>
+
+    <div id="board"></div>
+
+    <div id="inventory">
+        <img src="등급_전체.png" class="sticker" alt="전체이용가">
+        <img src="등급_12.png" class="sticker" alt="12세이용가">
+        <img src="폭력성.png" class="sticker" alt="폭력성">
+        <img src="선정성.png" class="sticker" alt="선정성">
+        </div>
+
+    <script>
+        // 드래그 로직 (interact.js 라이브러리 사용)
+        interact('.sticker').draggable({
+            listeners: {
+                move (event) {
+                    var target = event.target
+                    // 현재 위치 계산
+                    var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
+                    var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
+
+                    // 이동 적용 (회전이나 크기조절은 코드에 없으므로 절대 안됨)
+                    target.style.transform = `translate(${x}px, ${y}px)`
+
+                    // 위치값 저장
+                    target.setAttribute('data-x', x)
+                    target.setAttribute('data-y', y)
+                },
+                start (event) { event.target.classList.add('dragging') },
+                end (event) { event.target.classList.remove('dragging') }
+            }
+        })
+    </script>
+</body>
+</html>
