@@ -3,65 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>게임 등급분류 활동지</title>
+    <title>초등 스마트 게임 등급 검토 기록보드</title>
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
     <style>
-        body { margin: 0; padding: 0; background: #f0f2f5; font-family: sans-serif; overflow: hidden; touch-action: none; }
+        /* 기본 세팅: 아이들이 화면을 문질러도 스크롤되지 않게 고정 */
+        body { margin: 0; padding: 0; background: #e0e7ff; font-family: 'Malgun Gothic', sans-serif; overflow: hidden; touch-action: none; height: 100vh; display: flex; flex-direction: column; align-items: center; }
         
-        /* 배경판: 1.jpg (체크리스트 보드판) */
+        /* 메인 활동판 설정 */
         #board {
-            width: 1000px; height: 700px;
-            background: url('1.jpg') no-repeat center/contain;
-            background-color: white;
-            position: relative; margin: 20px auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 10px;
+            /* 핵심: 네가 올린 배경 이미지 파일명으로 수정 */
+            background-image: url('그림1.png'); 
+            background-size: 100% 100%; /* 이미지가 판에 딱 맞게 */
+            background-repeat: no-repeat;
+            background-position: center;
+            
+            /* 판 크기 (태블릿에 적당한 비율) */
+            width: 1000px; height: 650px;
+            position: relative; margin-top: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-radius: 8px;
+            background-color: white; flex-shrink: 0;
         }
         
+        /* 텍스트 입력창 스타일 (배경 칸 위에 투명하게 배치) */
+        .text-input {
+            position: absolute; border: none; background: transparent;
+            font-size: 18px; color: #333; padding: 5px; outline: none;
+        }
+        .text-input:focus { background: rgba(188, 132, 238, 0.1); border-radius: 4px; } /* 클릭했을 때만 살짝 색 변함 */
+        
+        /* 각 입력창 위치 설정 (그림1.png 칸 위치에 맞춰 조절함) */
+        #input-game-title { top: 78px; left: 165px; width: 350px; height: 30px; font-weight: bold; }
+        #input-reviewer { top: 78px; left: 635px; width: 200px; height: 30px; }
+        #input-reason { top: 510px; left: 100px; width: 800px; height: 100px; font-size: 16px; align-items: flex-start; resize: none;}
+
         /* 스티커 저장소 (화면 아래쪽) */
         #inventory {
-            width: 1000px; height: 120px;
-            background: #fff; margin: 10px auto;
+            width: 1000px; flex-grow: 1; min-height: 100px;
+            background: rgba(255, 255, 255, 0.7); margin: 10px auto;
             display: flex; align-items: center; justify-content: center;
-            gap: 15px; border-radius: 10px; padding: 10px; flex-wrap: wrap;
+            gap: 15px; border-radius: 10px; padding: 10px; box-sizing: border-box;
         }
         
+        /* 스티커 기본 스타일 */
         .sticker {
-            width: 60px; height: 60px;
+            height: 90px; width: auto; /* 크기를 조금 키움 */
             touch-action: none; user-select: none;
-            cursor: grab; object-fit: contain;
+            cursor: grab;
+            
+            /* 핵심: 그림 깨짐 방지 (최대한 선명하게 렌더링) */
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         }
         
-        /* 이동 중일 때 스타일 */
-        .dragging { opacity: 0.8; cursor: grabbing; z-index: 1000; }
+        /* 드래그 중일 때 스타일 */
+        .dragging { opacity: 0.7; cursor: grabbing; z-index: 1000; transform: scale(1.1); }
     </style>
 </head>
 <body>
 
-    <div id="board"></div>
+    <div id="board">
+        <input type="text" id="input-game-title" class="text-input" placeholder="여기에 게임 이름을 적으세요">
+        <input type="text" id="input-reviewer" class="text-input" placeholder="이름 번호">
+        <textarea id="input-reason" class="text-input" placeholder="왜 이 등급을 주었나요? 의견을 자유롭게 적어보세요."></textarea>
+    </div>
 
     <div id="inventory">
-        <img src="12.gif" class="sticker">
-        <img src="15.gif" class="sticker">
-        <img src="1.gif" class="sticker">
-        <img src="2.gif" class="sticker">
-        <img src="3.gif" class="sticker">
-        <img src="4.gif" class="sticker">
-        <img src="5.gif" class="sticker">
-        <img src="6.gif" class="sticker">
-        <img src="7.gif" class="sticker">
+        <img src="12.gif" class="sticker" alt="12세">
+        <img src="15.gif" class="sticker" alt="15세">
+        
+        <img src="1.gif" class="sticker" alt="폭력성">
+        <img src="2.gif" class="sticker" alt="선정성">
+        <img src="3.gif" class="sticker" alt="공포">
+        <img src="4.gif" class="sticker" alt="언어">
+        <img src="5.gif" class="sticker" alt="약물">
+        <img src="6.gif" class="sticker" alt="범죄">
+        <img src="7.gif" class="sticker" alt="사행성">
     </div>
 
     <script>
-        // 드래그 로직 (interact.js)
+        // interact.js 라이브러리를 이용한 절대 안 찌그러지는 드래그 로직
         interact('.sticker').draggable({
             listeners: {
                 move (event) {
                     var target = event.target
+                    // 현재 위치값 가져오기 (없으면 0)
                     var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
                     var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
 
+                    // 오직 이동(translate)만 적용. 회전이나 크기조절은 코드에 없으므로 절대 안됨.
                     target.style.transform = `translate(${x}px, ${y}px)`
 
+                    // 좌표값 업데이트
                     target.setAttribute('data-x', x)
                     target.setAttribute('data-y', y)
                 },
